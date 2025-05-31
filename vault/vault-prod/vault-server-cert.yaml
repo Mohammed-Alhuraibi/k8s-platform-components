@@ -1,0 +1,74 @@
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: vault-server
+#   namespace: vault
+# spec:
+#   secretName: tls-server
+#   duration: 8760h
+#   renewBefore: 360h
+#   subject:
+#     organizations:
+#       - vault
+#   commonName: vault.vault.svc
+#   dnsNames:
+#     - vault.vault.svc
+#     - vault
+#     - vault.vault
+#     - vault.vault.svc.cluster.local
+#     - vault-0.vault-internal
+#     - vault-1.vault-internal
+#   issuerRef:
+#     name: vault-ca-issuer
+#     kind: ClusterIssuer
+
+---
+# Claude
+#
+# Updated certificate configuration with proper SANs
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vault-server-tls
+  namespace: vault # Make sure this matches your namespace
+spec:
+  secretName: tls-server
+  issuerRef:
+    name: vault-ca-issuer # Your ClusterIssuer name
+    kind: ClusterIssuer
+  commonName: vault.vault.svc.cluster.local
+  dnsNames:
+    # Service names
+    - vault
+    - vault.vault
+    - vault.vault.svc
+    - vault.vault.svc.cluster.local
+    - vault-internal
+    - vault-internal.vault
+    - vault-internal.vault.svc
+    - vault-internal.vault.svc.cluster.local
+    # Individual pod names
+    - vault-0.vault-internal
+    - vault-0.vault-internal.vault
+    - vault-0.vault-internal.vault.svc
+    - vault-0.vault-internal.vault.svc.cluster.local
+    - vault-1.vault-internal
+    - vault-1.vault-internal.vault
+    - vault-1.vault-internal.vault.svc
+    - vault-1.vault-internal.vault.svc.cluster.local
+    # Active/Standby service names
+    - vault-active
+    - vault-active.vault
+    - vault-active.vault.svc
+    - vault-active.vault.svc.cluster.local
+    - vault-standby
+    - vault-standby.vault
+    - vault-standby.vault.svc
+    - vault-standby.vault.svc.cluster.local
+  ipAddresses:
+    # Localhost for CLI access
+    - "127.0.0.1"
+    # Pod IPs (you might need to adjust these based on your cluster)
+    - "10.0.0.0" # Placeholder - will be dynamically assigned
+  duration: 8760h # 1 year
+  renewBefore: 720h # 30 days

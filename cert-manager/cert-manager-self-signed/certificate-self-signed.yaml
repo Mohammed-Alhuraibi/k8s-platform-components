@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nginx-certificate
+  namespace: test-clusterissuer-selfsigned
+spec:
+  secretName: my-service-tls
+  duration: 8760h # 1 year
+  renewBefore: 360h # renew 15 days before expiration
+  subject:
+    organizations:
+      - My Org
+  commonName: nginx.local
+  dnsNames:
+    - nginx.local
+  issuerRef:
+    name: my-ca-clusterissuer
+    kind: ClusterIssuer

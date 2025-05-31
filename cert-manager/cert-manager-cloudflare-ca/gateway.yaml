@@ -1,0 +1,24 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: example-gateway
+  namespace: default
+  annotations:
+    cert-manager.io/issuer: prod-issuer
+    cert-manager.io/issuer-kind: OriginIssuer
+    cert-manager.io/issuer-group: cert-manager.k8s.cloudflare.com
+spec:
+  gatewayClassName: nginx # Replace with your GatewayClass
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: example.com
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: example-tls
+            kind: Secret
+      allowedRoutes:
+        namespaces:
+          from: Same

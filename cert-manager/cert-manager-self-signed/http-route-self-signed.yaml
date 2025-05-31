@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-route
+  namespace: test-clusterissuer-selfsigned
+spec:
+  parentRefs:
+    - name: nginx-gateway
+  hostnames:
+    - "nginx.local"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: nginx
+          port: 80

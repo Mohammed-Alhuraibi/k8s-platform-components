@@ -1,0 +1,204 @@
+# Production-ready Vault configuration with TLS and HA
+# This configuration assumes you have cert-manager installed with certificates named 'tls-server' and 'tls-ca'
+
+global:
+  # Global TLS configuration
+  tlsDisable: false
+
+injector:
+  # Disable the injector for this setup (can be enabled later if needed)
+  enabled: false
+
+server:
+  # Production image (latest stable)
+  image:
+    repository: "hashicorp/vault"
+    tag: "1.15.2"
+    pullPolicy: IfNotPresent
+
+  # Resource limits and requests for production
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+  # Enable high availability mode
+  ha:
+    enabled: true
+    replicas: 2
+
+    # Use integrated storage (Raft) for HA
+    raft:
+      enabled: true
+      setNodeId: true
+
+      # Raft configuration
+      config: |
+        ui = true
+
+        listener "tcp" {
+          tls_disable = 0
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_cert_file = "/vault/userconfig/tls-server/tls.crt"
+          tls_key_file = "/vault/userconfig/tls-server/tls.key"
+          tls_client_ca_file = "/vault/userconfig/tls-ca/tls.crt"
+          tls_min_version = "tls12"
+        }
+
+        storage "raft" {
+          path = "/vault/data"
+
+          retry_join {
+            leader_api_addr = "https://vault-0.vault-internal.vault.svc.cluster.local:8200"
+            leader_ca_cert_file = "/vault/userconfig/tls-ca/tls.crt"
+            leader_client_cert_file = "/vault/userconfig/tls-server/tls.crt"
+            leader_client_key_file = "/vault/userconfig/tls-server/tls.key"
+            leader_tls_servername = "vault-0.vault-internal.vault.svc.cluster.local"
+          }
+
+          retry_join {
+            leader_api_addr = "https://vault-1.vault-internal.vault.svc.cluster.local:8200"
+            leader_ca_cert_file = "/vault/userconfig/tls-ca/tls.crt"
+            leader_client_cert_file = "/vault/userconfig/tls-server/tls.crt"
+            leader_client_key_file = "/vault/userconfig/tls-server/tls.key"
+            leader_tls_servername = "vault-1.vault-internal.vault.svc.cluster.local"
+          }
+        }
+
+        cluster_addr = "https://[${HOSTNAME}].vault-internal.vault.svc.cluster.local:8201"
+        api_addr = "https://[${HOSTNAME}].vault-internal.vault.svc.cluster.local:8200"
+
+        log_level = "Info"
+        log_format = "json"
+
+        # Performance and limits
+        default_lease_ttl = "168h"
+        max_lease_ttl = "720h"
+
+  # Configure readiness and liveness probes for TLS
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 60
+    periodSeconds: 30
+
+  # Pod disruption budget for HA
+  disruptionBudget:
+    enabled: true
+    maxUnavailable: 1
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsGroup: 1000
+    runAsUser: 100
+    fsGroup: 1000
+
+  # Volume mounts for TLS certificates
+  volumes:
+    - name: tls-server
+      secret:
+        secretName: tls-server
+        defaultMode: 0400
+    - name: tls-ca
+      secret:
+        secretName: tls-ca
+        defaultMode: 0400
+
+  volumeMounts:
+    - name: tls-server
+      mountPath: /vault/userconfig/tls-server
+      readOnly: true
+    - name: tls-ca
+      mountPath: /vault/userconfig/tls-ca
+      readOnly: true
+
+  # Annotations for cert-manager integration
+  annotations:
+    cert-manager.io/issuer: "vault-issuer"
+
+  # Data storage configuration
+  dataStorage:
+    enabled: true
+    size: "10Gi"
+    storageClass: null # Use default storage class
+    accessMode: ReadWriteOnce
+
+  # Audit storage (recommended for production)
+  auditStorage:
+    enabled: true
+    size: "5Gi"
+    storageClass: null
+    accessMode: ReadWriteOnce
+
+  # Service configuration
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 8200
+    targetPort: 8200
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "8200"
+
+  # StatefulSet configuration
+  statefulSet:
+    annotations:
+      reloader.stakater.com/auto: "true"
+
+  # Pod affinity to ensure replicas run on different nodes
+  affinity: |
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: vault
+            app.kubernetes.io/instance: "{{ .Release.Name }}"
+            component: server
+        topologyKey: kubernetes.io/hostname
+
+  # Node selector (if you want to run on specific nodes)
+  nodeSelector: {}
+
+  # Tolerations (if your nodes have taints)
+  tolerations: []
+
+  # Environment variables
+  extraEnvironmentVars:
+    VAULT_CACERT: /vault/userconfig/tls-ca/tls.crt
+    VAULT_TLSCERT: /vault/userconfig/tls-server/tls.crt
+    VAULT_TLSKEY: /vault/userconfig/tls-server/tls.key
+    VAULT_ADDR: "https://127.0.0.1:8200"
+    VAULT_API_ADDR: "https://127.0.0.1:8200"
+    VAULT_CLUSTER_ADDR: "https://127.0.0.1:8201"
+    VAULT_SKIP_VERIFY: "false"
+
+# UI Configuration
+ui:
+  enabled: true
+  serviceType: "ClusterIP"
+  externalPort: 8200
+
+# CSI Provider (can be enabled if you need Vault CSI integration)
+csi:
+  enabled: false
+
+# Service Monitor for Prometheus (if you use monitoring)
+serverTelemetry:
+  serviceMonitor:
+    enabled: false
+    selectors: {}
+
+# Network Policy (enable if you need network segmentation)
+networkPolicy:
+  enabled: false

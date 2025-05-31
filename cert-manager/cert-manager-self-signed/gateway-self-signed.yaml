@@ -1,0 +1,20 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: nginx-gateway
+  namespace: test-clusterissuer-selfsigned
+spec:
+  gatewayClassName: nginx
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "nginx.local"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: my-service-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
