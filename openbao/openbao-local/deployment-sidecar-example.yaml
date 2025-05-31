@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "my-app-role"
+        vault.hashicorp.com/agent-inject-secret-db-config: "secret/data/my-app/config"
+        vault.hashicorp.com/agent-inject-output-path: "/app/secrets"
+
+    spec:
+      serviceAccountName: my-app-service-account
+      containers:
+        - name: my-app
+          image: nginx
+          volumeMounts:
+            - name: secrets
+              mountPath: /app/secrets
+              # mountPath: /vault/secrets
+              readOnly: true
+      volumes:
+        - name: secrets
+          emptyDir: {}
