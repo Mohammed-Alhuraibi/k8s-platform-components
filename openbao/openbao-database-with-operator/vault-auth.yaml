@@ -1,0 +1,12 @@
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: openbao-auth
+  namespace: vault-secrets-operator
+spec:
+  vaultConnectionRef: openbao-connection
+  method: kubernetes
+  mount: kubernetes
+  kubernetes:
+    role: vso-role
+    serviceAccount: vault-secrets-operator-controller-manager

@@ -18,7 +18,7 @@ Initial Root Token: s.zJNwZlRrqISjyBHFMiEca6GF
 ```
 # Unseal the openbao pod
 ```bash
-kubectl exec -ti openbao-0 -n openbao -- bao operator unseal -key=<KEY-1>
+kubectl exec -ti openbao-0 -n openbao -- bao operator unseal <KEY-1>
 ```
 # Login using the Root Token
 ```bash
