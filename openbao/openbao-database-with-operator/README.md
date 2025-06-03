@@ -120,6 +120,7 @@ $ bao write database/roles/my-role \
 ```
 # Time to install the OpenBao (Vault) Secrets Operator
 ```bash
+$ helm repo add hashicorp https://helm.releases.hashicorp.com
 $ helm search repo hashicorp/vault-secrets-operator
 NAME                                  CHART VERSION   APP VERSION DESCRIPTION
 hashicorp/vault-secrets-operator      0.10.0          0.10.0      Official Vault Secrets Operator Chart
