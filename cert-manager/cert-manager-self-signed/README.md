@@ -12,7 +12,7 @@ helm install \
   --create-namespace \
   --version v1.17.2 \
   --set crds.enabled=true \
-  --set prometheus.enabled=true \  # Example: disabling prometheus using a Helm parameter
+  --set prometheus.enabled=true   # Example: disabling prometheus using a Helm parameter
 ```
 
 # Self Signed Certificate EXAMPLE
@@ -35,7 +35,7 @@ kubectl apply -f ca-secret.yaml
 
 ## Apply the clusterissuer
 ```bash
-kubectl apply -f clusterissuer-cert-manger.yaml
+kubectl apply -f clusterissuer-self-signed.yaml
 ```
 ## Now time to generate a certificate
 ```bash
