@@ -8,5 +8,5 @@ spec:
   method: kubernetes
   mount: kubernetes
   kubernetes:
-    role: vso-role
+    role: vkso-role
     serviceAccount: vault-secrets-operator-controller-manager

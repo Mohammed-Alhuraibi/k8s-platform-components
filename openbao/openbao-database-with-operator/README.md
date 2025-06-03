@@ -131,12 +131,18 @@ $ helm install vault-secrets-operator hashicorp/vault-secrets-operator \
     --create-namespace
 
 ```
+# Enable secret kv
+```bash
+
+bao secrets enable -path=secret kv-v2
+
+
+```
 # Write the creds into bao secrets
 ```bash
 bao kv put secret/db-creds \
     username="my_app_user" \
     password="S3cr3tP@ssw0rd"
-
 ```
 # Create a policy that allows reading that KV path db-cred-policy.hcl
 ```bash
