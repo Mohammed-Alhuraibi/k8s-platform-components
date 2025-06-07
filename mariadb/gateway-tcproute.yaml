@@ -1,0 +1,27 @@
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: Gateway
+metadata:
+  name: mariadb-gateway
+  namespace: mariadb-prod
+spec:
+  gatewayClassName: nginx
+  listeners:
+    - name: mysql
+      protocol: TCP
+      port: 3306
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: mariadb-route
+  namespace: mariadb-prod
+spec:
+  parentRefs:
+    - name: mariadb-gateway
+  rules:
+    - backendRefs:
+        - name: mariadb-primary
+          port: 3306

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bao-1-client
+  namespace: openbao
+spec:
+  containers:
+    - name: bao
+      image: quay.io/openbao/openbao:2.2.2
+      command: ["sh"]
+      args: ["-c", "sleep infinity"]
+      env:
+        - name: VAULT_ADDR
+          # pod dns name
+          value: "https://openbao-1.openbao-internal.openbao.svc.cluster.local:8200"
+          # service dns name used after unsealing & joining
+          # value: "https://openbao.openbao.svc.mega:8200"
+        - name: VAULT_CACERT
+          value: "/openbao/ca/tls.crt"
+      volumeMounts:
+        - name: bao-ca
+          mountPath: /openbao/ca
+  volumes:
+    - name: bao-ca
+      secret:
+        secretName: openbao-ca-secret

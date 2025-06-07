@@ -1,0 +1,7 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: openbao-ca-issuer
+spec:
+  ca:
+    secretName: openbao-ca-secret

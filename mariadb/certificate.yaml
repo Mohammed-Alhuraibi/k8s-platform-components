@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mariadb-cert
+  namespace: mariadb-prod # Replace this!
+spec:
+  secretName: mariadb-tls-secret # This is the secret your Helm chart expects
+  issuerRef:
+    name: my-ca-clusterissuer # Your cluster-wide issuer
+    kind: ClusterIssuer
+  commonName: mariadb.mariadb-prod.svc # Replace with your MariaDB service FQDN
+  dnsNames:
+    - mariadb
+    - mariadb.mariadb-prod
+    - mariadb.mariadb-prod.svc
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth

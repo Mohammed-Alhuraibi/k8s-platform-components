@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: default
+  namespace: openbao
+  annotations:
+    # This tells Kubernetes: “Populate this Secret with the 'default' SA’s token.”
+    kubernetes.io/service-account.name: default
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: openbao-default-token-reviewer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator   # includes permission to create tokenreviews
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: openbao
+
