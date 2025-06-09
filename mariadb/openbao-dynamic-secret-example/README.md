@@ -2,7 +2,7 @@
 ## inside the mariadb
 ```bash
 CREATE USER 'openbaouser'@'%' IDENTIFIED BY 'openbaopass';
-GRANT CREATE USER, DROP USER, SELECT, LOCK TABLES, EVENT, TRIGGER, GRANT OPTION  ON *.* TO 'openbaouser'@'%';
+GRANT CREATE USER, DROP USER, SELECT, LOCK TABLES, EVENT, TRIGGER ON *.* TO 'openbaouser'@'%';
 FLUSH PRIVILEGES;
 ```
 
@@ -30,6 +30,7 @@ bao write database/config/my-mariadb-database \
 ```
 ## Plociy
 ```bash
+# /tmp/app1-policy.hcl
 path "auth/kubernetes/login" {
   capabilities = ["create", "read"]
 }
@@ -37,6 +38,9 @@ path "auth/kubernetes/login" {
 path "database/creds/app1-role" {
   capabilities = ["read"]
 }
+```
+```bash
+bao policy write app1-policy /tmp/app1-policy.hcl
 ```
 ## Role for database
 ```bash
@@ -160,8 +164,8 @@ spec:
     create: true
     name: mydb-app-credentials
 
-
-
 ```
 
-.
+```bash
+kubectl apply -f vault-connection-auth-dynamicsecret.yaml
+```
