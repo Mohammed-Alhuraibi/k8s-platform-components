@@ -115,6 +115,9 @@ bao write auth/kubernetes/role/mariadb-role \
 Store your MariaDB credentials in Vault's KV v2 engine:
 
 ```bash
+bao secrets enable -path=secret -version=2 kv
+
+
 bao kv put secret/mariadb/prod \
   mariadb-root-password="root_password" \
   mariadb-password="mariadb_password" \
@@ -300,7 +303,7 @@ curl -k https://openbao.openbao.svc.cluster.local:8200/v1/sys/health
 ## Next Steps
 
 Once this setup is complete, you can:
-1. Configure your MariaDB deployment to use the `mariadb-k8s-secret` 
+1. Configure your MariaDB deployment to use the `mariadb-k8s-secret`
 2. Set up similar authentication patterns for other applications
 3. Implement secret rotation using Vault's dynamic secrets capabilities
 4. Monitor secret access through Vault's audit logs

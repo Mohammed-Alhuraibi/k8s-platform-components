@@ -39,5 +39,5 @@ kubectl apply -f clusterissuer-self-signed.yaml
 ```
 ## Now time to generate a certificate
 ```bash
-k apply -f certificate-self-signed.yaml
+kubectl apply -f certificate-self-signed.yaml
 ```
